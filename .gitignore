@@ -9,3 +9,6 @@ Thumbs.db
 
 #logs and Databases#
 *.log
+
+#config#
+*/config.js
