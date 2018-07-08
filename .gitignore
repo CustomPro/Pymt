@@ -12,3 +12,8 @@ Thumbs.db
 
 #config#
 /config/config.js
+
+#compiled files#
+/android/*
+/ios/*
+
