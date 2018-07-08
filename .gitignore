@@ -11,4 +11,4 @@ Thumbs.db
 *.log
 
 #config#
-*/config.js
+/config/config.js
