@@ -1,0 +1,34 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cookie-parser": "~1.4.3",
+    "cors": "^2.8.4",
+    "debug": "~2.6.9",
+    "ejs": "~2.5.7",
+    "express": "~4.16.0",
+    "express-jwt": "^5.3.1",
+    "express-layout": "^0.1.0",
+    "express-partials": "^0.3.0",
+    "http-errors": "~1.6.2",
+    "json2csv": "^4.1.3",
+    "jsonwebtoken": "^8.2.1",
+    "mailgun-js": "^0.18.0",
+    "moment": "^2.22.1",
+    "morgan": "~1.9.0",
+    "multer": "^1.3.0",
+    "mysql": "^2.15.0",
+    "node-rest-client": "^3.1.0",
+    "path": "^0.12.7",
+    "request": "^2.87.0",
+    "twilio": "^3.17.2",
+    "validate.js": "^0.12.0",
+    "xml2json": "^0.11.2",
+    "xmlbuilder": "^10.0.0"
+  }
+}

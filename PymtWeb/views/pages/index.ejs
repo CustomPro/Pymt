@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+
+<head>
+    <title>Login V2</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/util.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Sufee Admin - HTML5 Admin Template</title>
+    <meta name="description" content="Sufee Admin - ejs5 Admin Template">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-icon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <!-- <link rel="stylesheet" href="assets/css/normalize.css"> -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/themify-icons.css">
+    <link rel="stylesheet" href="assets/css/flag-icon.min.css">
+    <link rel="stylesheet" href="assets/css/cs-skin-elastic.css">
+
+
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <link href="assets/css/lib/vector-map/jqvmap.min.css" rel="stylesheet">
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
+    <!--===============================================================================================-->
+</head>
+
+
+
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-login100">
+                <form class="login100-form validate-form" method="post" action="/login">
+                    <span class="login100-form-title p-b-26">
+                        Admin Login
+                    </span>
+                    <span class="login100-form-title p-b-48">
+                        <i class="zmdi zmdi-font"></i>
+                    </span>
+
+                    <div class="wrap-input100 validate-input" data-validate="Valid email is: a@b.c">
+                        <input class="input100" type="text" name="email">
+                        <span class="focus-input100"  data-placeholder="Email"></span>
+                    </div>
+
+                    <div class="wrap-input100 validate-input" data-validate="Enter password">
+                        <span class="btn-show-pass">
+                            <i class="zmdi zmdi-eye"></i>
+                        </span>
+                        <input class="input100" type="password" name="password">
+                        <span class="focus-input100" data-placeholder="Password"></span>
+                    </div>
+                    <input type="hidden" value="amdin" name="admin">
+                    <div class="container-login100-form-btn">
+                        <div class="wrap-login100-form-btn">
+                            <div class="login100-form-bgbtn"></div>
+                            <button class="login100-form-btn">
+                                Login
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center p-t-115">
+                        <span class="txt1">
+                          <a href="javascript:void(0)" data-toggle="modal" data-target="#staticModal1"> Forgot Password</a>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+<div class="modal fade" id="staticModal1" tabindex="-1" role="dialog" aria-labelledby="staticModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticModalLabel">Confirm email</h5>
+
+            </div>
+
+            <form name="myform" method="post" action="/forgotPassword">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="cc-number" id="emails" class="control-label mb-1">Email</label>
+                        <input id="useremail" name="useremail" type="email" class="form-control cc-number identified visa"  data-val-required="Please enter email"
+                            data-val-cc-number="Please enter a valid card number" autocomplete="cc-number">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" id="next"  class="btn btn-primary">NEXT</button>
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="staticModal" tabindex="-1" role="dialog" aria-labelledby="staticModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticModalLabe">Update Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="/updatePassword">
+                <div class="modal-body">
+                    <div class="form-group has-success">
+                        <label for="cc-name" class="control-label mb-1">New Password</label>
+                        <input name="newPassword" id="newPassword" type="password" class="form-control cc-name valid" data-val="true" data-val-required="Please enter the name on card"
+                            autocomplete="cc-name" aria-required="true" aria-invalid="false" aria-describedby="cc-name-error">
+                        <span class="help-block field-validation-valid" data-valmsg-for="cc-name" data-valmsg-replace="true"></span>
+                    </div>
+                        <div class="form-group has-success">
+                            <input type="text" id="email3" name="email3" class="form-control cc-name valid" data-val="true" data-val-required="Please enter the name on card" autocomplete="cc-name"
+                            aria-required="true" aria-invalid="false" aria-describedby="cc-name-error">
+                            <label for="cc-name" class="control-label mb-1">New</label>
+                            <span class="help-block field-validation-valid" data-valmsg-for="cc-name" data-valmsg-replace="true"></span>
+                        </div>
+                    <div class="form-group">
+                        <label for="cc-number" class="control-label mb-1">Confirm Password </label>
+                        <input id="againPassword" name="againPassword" type="password" class="form-control cc-number identified visa" value="" data-val="true"
+                            data-val-required="Please enter the card number" data-val-cc-number="Please enter a valid card number"
+                            autocomplete="cc-number">
+                        <span class="help-block" data-valmsg-for="cc-number" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="assets/js/vendor/jquery-2.1.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+<script src="assets/js/plugins.js"></script>
+<script src="assets/js/main.js"></script>
+
+
+<script src="assets/js/lib/chart-js/Chart.bundle.js"></script>
+<script src="assets/js/dashboard.js"></script>
+<script src="assets/js/widgets.js"></script>
+<script src="assets/js/lib/vector-map/jquery.vmap.js"></script>
+<script src="assets/js/lib/vector-map/jquery.vmap.min.js"></script>
+<script src="assets/js/lib/vector-map/jquery.vmap.sampledata.js"></script>
+<script src="assets/js/lib/vector-map/country/jquery.vmap.world.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+        $(document).ready(function () {
+            $("#next").click(function () {
+                // var emailid = document.getElementById("useremail");
+                alert("working");
+                //console.log("emailid",emailid);
+                // $("#email3").val(emailid);
+            });
+        });
+    (function ($) {
+        "use strict";
+
+        jQuery('#vmap').vectorMap({
+            map: 'world_en',
+            backgroundColor: null,
+            color: '#ffffff',
+            hoverOpacity: 0.7,
+            selectedColor: '#1de9b6',
+            enableZoom: true,
+            showTooltip: true,
+            values: sample_data,
+            scaleColors: ['#1de9b6', '#03a9f5'],
+            normalizeFunction: 'polynomial'
+        });
+    })(jQuery);
+
+</script>
