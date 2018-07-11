@@ -1,6 +1,7 @@
 const connection = require('../config/connection.js');
 const { createPayment, updatePayment } = require('./payment');
 const { createOrder, updateOrder } = require('./order');
+var moment = require('moment');
 
 const getAllTabs = (accountId, callback) => {
     const sql = `select t.id as tabId, t.first_name as firstname, t.last_name as lastname, o.*, p.* from \`tab\` t left join \`order\` o on t.order_id = o.id 
@@ -42,43 +43,131 @@ const getAllTabs = (accountId, callback) => {
     })
 }
 
+const createPaymentForTab = (paymentObj, info, callback) => {
+    var sql = `insert into payment (order_id, cash_id, type, signature, amount_tendered, change_given, xmp, account_id)
+    values (${info.order_id}, ${info.cash_id}, '${paymentObj.paymentType}', '${paymentObj.signature}', ${paymentObj.amountTendered},
+    ${paymentObj.changeGiven}, '${paymentObj.xmp}', ${info.account_id})`
+
+    connection.query(sql, function(err, result) {
+      if(err) callback(err, null)
+      else{
+        sql = `INSERT INTO \`tab\` (first_name, last_name, order_id, payment_id, account_id) VALUES 
+                        ('${info.firstName}', '${info.lastName}', ${info.order_id}, ${result.insertId}, ${info.account_id})`
+        connection.query(sql, function(err, result){
+            callback(err, result)
+        })
+      }
+    });
+
+
+
+}
 const createTab = (accountId, param, callback) => {
     let firstName = param.firstname;
     let lastName = param.lastname;
-    let orderObj = param.orderObj;
-    let paymentObj = param.paymentObj;
+    let tabId = param.tabId;
+    let orderItems = param.items;
+    let paymentItems = param.payment;
 
-    if (!firstName || !lastName || !orderObj || !paymentObj) {
+    if (!firstName || !tabId || !orderItems || !paymentItems) {
         callback(new Error('Validation Error'), null);
     } else {
-        orderId = orderObj.orderId
-        if(!orderId)
-            orderId = null
-        paymentId = paymentObj.paymentId
-        if (!paymentId) {
-            paymentId = null
-        }
-        const sql = `INSERT INTO \`tab\` (first_name, last_name, order_id, payment_id, account_id) VALUES 
-            ('${firstName}', '${lastName}', ${orderId}, ${paymentId}, ${accountId})`
 
-        transactionId = orderObj.orderObj.transactionId
-        if(!transactionId)
-            transactionId = Math.floor(Math.random(10)*30000)
+        var sql = `select id from cash where account_id = ${account_id} and
+        day_opened = true and day_closed = false order by opening_date desc`
 
-        orderObj.orderObj.transactionId = transactionId
-        paymentObj.orderObj.transactionId = transactionId
-        connection.query(sql, (err, result) => {
-            if (err) callback(err, null);
+        connection.query(sql, function(err, result) {
+
+            if(err) callback(err, callback)
             else {
-                createOrder(orderObj, accountId, (err, result => {
-                    if (err) callback(err, null);
-                    else {
-                        paymentObj.account_id = accountId
-                        createPayment(paymentObj, callback);
+                var cash = result[0]
+
+              if(cash) {
+                var orderDate = moment().format('YYYY-MM-DD HH:mm:ss')
+                sql = `insert into \`order\` (cash_id, order_date, order_type, table_number, transaction_id, order_status, cart_total, discount_percent, discount_amount, item_quantity, account_id, class_type)
+                  values (${cash.id}, '${orderDate}',  '', '${param.tabId}','', '${param.status}','', '','', '', ${account_id}, 2)`
+                connection.query(sql, function(err, createdOrder){
+                  if(err) callback(err, callback)
+                  else {
+
+                    var newCartNumber = Date.now().toString().split('').reverse().join('').substr(0, 5)
+                    var sql = `insert into cart (cart_number, status, table_id, order_id) values (${tabId}, '${param.status}', '', ${createdOrder.insertId})`
+                    connection.query(sql, function(err, createdCart) {
+
+                      if(err) callback(err, createdCart)
+                      else {
+                        var items = orderItems;
+                        items.reverse();
+
+                        var addItem = () => {
+                          var item = items.shift()
+                          sql = `insert into order_item (order_id, item_id, name, price, quantity, is_taxable, is_ebt, is_fsa)
+                          values (${createdOrder.insertId}, '${item.itemId}', '${item.name}', ${item.price}, ${item.quantity},
+                            ${item.isTaxable}, ${item.isEBT}, ${item.isFSA})`
+
+                          connection.query(sql, function(err, createdOrderItem) {
+
+                            if(err) callback(err, null)
+                            else {
+
+                              var modifiers = item.modifiers
+                              var mods = Object.keys(modifiers)
+                              var addModifire = () => {
+                                var key = mods.shift()
+                                var value = modifiers[key]
+                                sql = `insert into order_modifier (order_id, order_item_id, name, value)
+                                values (${createdOrder.insertId}, ${createdOrderItem.insertId}, '${key}', '${value}')`
+                                connection.query(sql, function(err, result) {
+                                  if(err) callback(err, null)
+                                  else {
+                                    if(mods.length) addModifire()
+                                    else {
+                                      if(items.length) addItem()
+                                      else {
+                                        callback(err, result)
+                                      }
+                                    }
+                                  }
+                                })
+                              }
+                              addModifire()
+                            }
+                          })
+                        }
+                        addItem()
+                      }
+                    })
+
+                    paymentItems.reverse();
+                    var addPayment = () => {
+                        var item = paymentItems.shift()
+                        var info = {
+                            firstname: firstName,
+                            lastname: lastName,
+                            account_id: accountId,
+                            order_id: createdOrder.insertId,
+                            cash_id: cash.id
+                        }
+                        createPaymentForTab(item, info, (err, result) => {
+                            if(err) callback(err, null)
+                            else {
+                                if(paymentItems.length) addPayment()
+                                else callback(err, result)
+                            }
+                        });
+
                     }
-                }));
+                    addPayment();                    
+                    }
+                });
+              } else {
+                    var error = new Error('Cash record not found')
+                    callback(err, null)
+                }
             }
-        })
+
+        });
+        
     }
 }
 

@@ -19,7 +19,7 @@ function createPayment(payment, callback) {
     var sql = `insert into payment (order_id, cash_id, type, signature, amount_tendered, change_given, xmp, account_id)
     values (${order.order_id}, ${order.cash_id}, '${paymentObj.paymentType}', '${paymentObj.signature}', ${paymentObj.amountTendered},
     ${paymentObj.changeGiven}, '${paymentObj.xmp}', ${payment.account_id})`
-    console.log(sql)
+
     connection.query(sql, function(err, result) {
       callback(err, result)
     });
