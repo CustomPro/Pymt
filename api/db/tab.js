@@ -47,7 +47,7 @@ const createPaymentForTab = (paymentObj, info, callback) => {
     var sql = `insert into payment (order_id, cash_id, type, signature, amount_tendered, change_given, xmp, account_id)
     values (${info.order_id}, ${info.cash_id}, '${paymentObj.paymentType}', '${paymentObj.signature}', ${paymentObj.amountTendered},
     ${paymentObj.changeGiven}, '${paymentObj.xmp}', ${info.account_id})`
-
+console.log(sql)
     connection.query(sql, function(err, result) {
       if(err) callback(err, null)
       else{
@@ -58,16 +58,15 @@ const createPaymentForTab = (paymentObj, info, callback) => {
         })
       }
     });
-
-
-
 }
+
 const createTab = (accountId, param, callback) => {
-    let firstName = param.firstname;
-    let lastName = param.lastname;
+    let firstName = param.firstName;
+    let lastName = param.lastName;
     let tabId = param.tabId;
     let orderItems = param.items;
     let paymentItems = param.payment;
+    let account_id = accountId;
 
     if (!firstName || !tabId || !orderItems || !paymentItems) {
         callback(new Error('Validation Error'), null);
@@ -84,14 +83,14 @@ const createTab = (accountId, param, callback) => {
 
               if(cash) {
                 var orderDate = moment().format('YYYY-MM-DD HH:mm:ss')
-                sql = `insert into \`order\` (cash_id, order_date, order_type, table_number, transaction_id, order_status, cart_total, discount_percent, discount_amount, item_quantity, account_id, class_type)
-                  values (${cash.id}, '${orderDate}',  '', '${param.tabId}','', '${param.status}','', '','', '', ${account_id}, 2)`
+                sql = `insert into \`order\` (cash_id, order_date, table_number,  order_status, account_id, class_type)
+                  values (${cash.id}, '${orderDate}',  '${param.tabId}', '${param.status}', ${account_id}, 2)`
                 connection.query(sql, function(err, createdOrder){
                   if(err) callback(err, callback)
                   else {
 
                     var newCartNumber = Date.now().toString().split('').reverse().join('').substr(0, 5)
-                    var sql = `insert into cart (cart_number, status, table_id, order_id) values (${tabId}, '${param.status}', '', ${createdOrder.insertId})`
+                    var sql = `insert into cart (cart_number, status, order_id) values (${tabId}, '${param.status}', ${createdOrder.insertId})`
                     connection.query(sql, function(err, createdCart) {
 
                       if(err) callback(err, createdCart)
@@ -102,8 +101,7 @@ const createTab = (accountId, param, callback) => {
                         var addItem = () => {
                           var item = items.shift()
                           sql = `insert into order_item (order_id, item_id, name, price, quantity, is_taxable, is_ebt, is_fsa)
-                          values (${createdOrder.insertId}, '${item.itemId}', '${item.name}', ${item.price}, ${item.quantity},
-                            ${item.isTaxable}, ${item.isEBT}, ${item.isFSA})`
+                          values (${createdOrder.insertId}, '${item.itemId}', '${item.name}', ${item.price}, ${item.quantity}, ${item.isTaxable}, ${item.isEBT}, ${item.isFSA})`
 
                           connection.query(sql, function(err, createdOrderItem) {
 
@@ -137,14 +135,14 @@ const createTab = (accountId, param, callback) => {
                         addItem()
                       }
                     })
-
+//// add payment and tap///
                     paymentItems.reverse();
                     var addPayment = () => {
                         var item = paymentItems.shift()
                         var info = {
-                            firstname: firstName,
-                            lastname: lastName,
-                            account_id: accountId,
+                            firstName: firstName,
+                            lastName: lastName,
+                            account_id,
                             order_id: createdOrder.insertId,
                             cash_id: cash.id
                         }
@@ -154,11 +152,37 @@ const createTab = (accountId, param, callback) => {
                                 if(paymentItems.length) addPayment()
                                 else callback(err, result)
                             }
-                        });
+                        })
 
                     }
-                    addPayment();                    
+                    addPayment();
+// add giftcard_redeem //
+                    let cardredeem = param.giftcardRedeem;
+                    if(cardredeem) {
+                        sql = `insert into giftcard_redeem (order_id, amount, authcode, last4) values (${createdOrder.insertId}, ${cardredeem.redeemAmount}, '${cardredeem.authCode}', '${cardredeem.last4}')`
+                        connection.query(sql, function(err, result) {
+                          if(err) callback(err, null);
+                          });
                     }
+// add giftcard_load
+                    let cardload = param.giftCardLoad;
+                    if(cardload) {
+                        sql = `insert into giftcard_load (order_id, amount, authcode, last4) values (${createdOrder.insertId}, ${cardload.loadAmount}, '${cardload.authCode}', '${cardload.last4}')`
+                        connection.query(sql, function(err, result) {
+                          if(err) callback(err, null);
+                          });
+
+                    }
+// add tip
+                    let tip = param.tip;
+                    if(tip){
+                        sql = `insert into order_tip (order_id, amount, user, approvalcode) values (${createdOrder.insertId}, ${tip.amount}, '${tip.user}', '${tip.approvalCode}')`
+                        connection.query(sql, function(err, result) {
+                          if(err) callback(err, null);
+                          });
+
+                    }
+                }
                 });
               } else {
                     var error = new Error('Cash record not found')

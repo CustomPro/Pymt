@@ -97,6 +97,16 @@ function getOrdersByDateRange(account_id, from, to, callback) {
   });
 }
 
+const createPaymentForOrder = (paymentObj, info, callback) => {
+    var sql = `insert into payment (order_id, cash_id, type, signature, amount_tendered, change_given, xmp, account_id)
+    values (${info.order_id}, ${info.cash_id}, '${paymentObj.paymentType}', '${paymentObj.signature}', ${paymentObj.amountTendered},
+    ${paymentObj.changeGiven}, '${paymentObj.xmp}', ${info.account_id})`
+
+    connection.query(sql, function(err, result) {
+      callback(err, result)
+    });
+}
+
 function createOrder(order, account_id, callback) {
   var sql = `select id from cash where account_id = ${account_id} and
   day_opened = true and day_closed = false order by opening_date desc`
@@ -106,7 +116,7 @@ function createOrder(order, account_id, callback) {
     if(err) callback(err, callback)
     else {
       if(!order.orderObj.transactionId)
-        order.orderObj.transactionId = Math.floor(Math.random(10)*30000)
+        order.orderObj.transactionId = Date.now().toString().split('').reverse().join('').substr(0, 8)
       if(!order.orderObj.orderDate)
         order.orderObj.orderDate = moment().format('YYYY-MM-DD HH:mm:ss')
       var cash = result[0]
@@ -118,17 +128,12 @@ function createOrder(order, account_id, callback) {
         '${order.orderObj.transactionId}', '${order.orderObj.orderStatus}', ${order.orderObj.cartTotal}, ${order.orderObj.discountPercent},
         ${order.orderObj.discountAmount}, ${order.orderObj.itemQuantity}, ${account_id})`
 
-        // connection.query(sql, function(err, createdOrder) {
-        //   if(err) callback(err, callback)
-        //   else {
-        //     var order_id = createdOrder.insertId
-        //     var sql = `insert into \`table\` (number, status, order_id, account_id) values('${order.orderObj.tableNumber}', '${order.status}', ${order_id}, ${account_id})`
-
+       
             connection.query(sql, function(err, createdOrder){
               if(err) callback(err, callback)
               else {
 
-                var newCartNumber = Date.now().toString().split('').reverse().join('').substr(0, 5)
+                var newCartNumber = Date.now().toString().split('').reverse().join('').substr(0, 8)
                 var sql = `insert into cart (cart_number, status, table_id, order_id)
                 values (${order.cartNumber || newCartNumber}, '${order.status}', '${order.tableId}', ${createdOrder.insertId})`
 
@@ -178,11 +183,55 @@ function createOrder(order, account_id, callback) {
                     addItem()
                   }
                 })
-
               }
+    //// add payment and tap///    
+                    var paymentItems = order.orderObj.payment      
+                    paymentItems.reverse();
+                    var addPayment = () => {
+                        var item = paymentItems.shift()
+                        var info = {
+                            account_id,
+                            order_id: createdOrder.insertId,
+                            cash_id: cash.id
+                        }
+                        createPaymentForTab(item, info, (err, result) => {
+                            if(err) callback(err, null)
+                            else {
+                                if(paymentItems.length) addPayment()
+                                else callback(err, result)
+                            }
+                        })
+
+                    }
+                    addPayment();
+      // add giftcard_redeem //
+                    let cardredeem = order.orderObj.giftcardRedeem;
+                    if(cardredeem) {
+                        sql = `insert into giftcard_redeem (order_id, amount, authcode, last4) values (${createdOrder.insertId}, ${cardredeem.redeemAmount}, '${cardredeem.authCode}', '${cardredeem.last4}')`
+                        connection.query(sql, function(err, result) {
+                          if(err) callback(err, null);
+                          });
+                    }
+// add giftcard_load
+                    let cardload = order.orderObj.giftCardLoad;
+                    if(cardload) {
+                        sql = `insert into giftcard_load (order_id, amount, authcode, last4) values (${createdOrder.insertId}, ${cardload.loadAmount}, '${cardload.authCode}', '${cardload.last4}')`
+                        connection.query(sql, function(err, result) {
+                          if(err) callback(err, null);
+                          });
+
+                    }
+// add tip
+                    let tip = order.orderObj.tip;
+                    if(tip){
+                        sql = `insert into order_tip (order_id, amount, user, approvalcode) values (${createdOrder.insertId}, ${tip.amount}, '${tip.user}', '${tip.approvalCode}')`
+                        connection.query(sql, function(err, result) {
+                          if(err) callback(err, null);
+                          });
+
+                    }
             });
-        //   }
-        // });
+
       } else {
         var error = new Error('Cash record not found')
         callback(err, null)

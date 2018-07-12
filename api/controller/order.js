@@ -139,52 +139,6 @@ function create(req, res) {
     var { createOrder } = require('../db/order')
 
     var payload = req.body
-    // fake payload
-    // payload = {
-    //   "cartNumber": Math.floor(Math.random(10)*30000), //cartNumber is unique across platform assigned new if null
-    //   "status": "UNPAID",
-    //   "tableId": "1",
-    //   "orderObj": {
-    //     "orderDate": moment(new Date("2018-05-21T22:14:05.255Z")).format('YYYY-MM-DD HH:mm:ss'),
-    //     "orderType": 'CASH_ON_DELIVERY',
-    //     "tableNumber": 12,
-    //     "transactionId": Math.floor(Math.random(10)*30000), //cartNumber is unique across platform assigned new if null
-    //     "orderStatus": "CART",
-    //     "cartTotal": 7.34,
-    //     "discountPercent": "0",
-    //     "discountAmount": 0,
-    //     "itemQuantity": 5,
-    //     "items": [
-    //       {
-    //         "itemId": 40,
-    //         "name": "Cheeseburger Small",
-    //         "price": 3.00,
-    //         "quantity": 1,
-    //         "isTaxable": false,
-    //         "isEBT": true,
-    //         "isFSA": true,
-    //         "modifiers": {
-    //         "Cheese": 0.5,
-    //         "Tomato": 0
-    //         }
-    //       },
-    //       {
-    //         "itemId": 41,
-    //         "name": "Cheeseburger Medium",
-    //         "price": 4.00,
-    //         "quantity": 2,
-    //         "isTaxable": true,
-    //         "isEBT": false,
-    //         "isFSA": false,
-    //         "modifiers": {}
-    //       },
-    //     ]
-    //   }
-    // }
-    payload.cartNumber = Math.floor(Math.random(10)*30000)
-    payload.orderObj.orderDate = moment().format('YYYY-MM-DD HH:mm:ss')
-    if(!payload.orderObj.transactionId)
-        payload.orderObj.transactionId = Math.floor(Math.random(10)*30000)
       
     createOrder(payload, currentUser.accountId, (err, result)=>{
       if(err) {
