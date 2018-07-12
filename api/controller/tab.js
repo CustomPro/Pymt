@@ -93,8 +93,8 @@ const update = (req, res) => {
     try {
         let currentUser = jwt.verify(jwtToken, config.secret)
         let { updateTab } = require('../db/tab')
-
-        updateTab(currentUser.accountId, req.body, (err, tab)=> {
+        var tabId = req.params.id
+        updateTab(currentUser.accountId, tabId, req.body, (err, tab)=> {
             if(err) {
               return res.status(400).json({
                 success: false,
@@ -104,7 +104,7 @@ const update = (req, res) => {
             }
             return res.status(200).json({
               success: true,
-              message: 'Successfully Created',
+              message: 'Successfully Updated',
               status: 200
             })
         })

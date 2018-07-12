@@ -283,33 +283,55 @@ function totals(req, res) {
 }
 
 function tips(req, res) {
-  var from = moment(req.params.from, 'MMDDYYYY')
-  var to = moment(req.params.to, 'MMDDYYYY')
-  var tips = [
-    //this is an array of users and their tip amount based off the provided range
-    {
-      "userId": "",
-      "tipAmount": 4.50,
-      "lastUpdated": "2018-05-21T19:11:26.777Z",
-    },
-    {
-      "userId": "",
-      "tipAmount": 4.50,
-      "lastUpdated": "2018-05-21T19:11:26.777Z",
-    },
-    {
-      "userId": "",
-      "tipAmount": 4.50,
-      "lastUpdated": "2018-05-21T19:11:26.777Z",
-    }
-  ]
+   var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
+  }
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { getTipsByDateRange } = require('../db/order')
 
-  return res.status(200).json({
-    success: true,
-    message: 'Order user tips',
-    data: tips,
-    status: 200
-  })
+    var from = moment(req.params.from, 'MMDDYYYY')
+    var to = moment(req.params.to, 'MMDDYYYY')
+
+    if(!from.isValid() || !to.isValid()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid date format (Must Be: MMDDYYYY)',
+        status: 400
+      })
+    }
+    fdate = from.format('YYYY-MM-DD HH:mm:ss')
+    tdate = to.format('YYYY-MM-DD HH:mm:ss')
+    getTipsByDateRange(currentUser.accountId, fdate, tdate, (err, tips)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Order user tips',
+        data: tips,
+        status: 200
+      })
+    })  
+
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 module.exports = {

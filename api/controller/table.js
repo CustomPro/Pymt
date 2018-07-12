@@ -42,6 +42,7 @@ const allTables = (req, res) => {
 }
 
 const create = (req, res) => {
+
     let auth = req.headers.authorization
     if(!auth || auth.indexOf('Bearer ') !== 0) {
         return res.status(401).json({
@@ -93,8 +94,8 @@ const update = (req, res) => {
     try {
         let currentUser = jwt.verify(jwtToken, config.secret)
         let { updateTable } = require('../db/table')
-
-        updateTable(currentUser.accountId, req.body, (err, tables)=> {
+        tableId = req.params.id
+        updateTable(currentUser.accountId, tableId, req.body, (err, tables)=> {
             if(err) {
               return res.status(400).json({
                 success: false,
