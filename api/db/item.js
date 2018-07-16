@@ -6,6 +6,7 @@ function setItemValues(item) {
     "itemId": item.itemId, //if new item system will generate with next number and starts at 5 numbers long
     "itemName": item.itemName,
     "image": item.image,
+    "category_id": item.categoryId,
     "soldByWeight": item.soldByWeight,
     "trackInventory": item.trackInventory,
     "allowBackorder": item.allowBackorder,
@@ -31,7 +32,7 @@ function setItemValues(item) {
 }
 
 function getAllItems(account_id, item_id, callback) {
-  var sql = `select i.id itemId, i.name itemName, i.image, i.sold_by_weight soldByWeight,
+  var sql = `select i.id itemId, i.name itemName, i.image, i.category_id, i.sold_by_weight soldByWeight,
   i.track_inventory trackInventory, i.allow_backorder allowBackorder, i.selector_name selectorName,
   i.is_taxable isTaxable, i.is_ebt isEBT, i.is_fsa isFSA, i.selector_id selectorId,
   d.id details_itemId, d.name details_name, d.cost details_cost, d.price details_price,
@@ -103,9 +104,9 @@ function getAllItems(account_id, item_id, callback) {
 function createItem(item, callback) {
   if(!item.selectors) return callback(new Error('No selectors found in request item'), null)
 
-  var sql = `insert into items (name, image, sold_by_weight, track_inventory, allow_backorder,
+  var sql = `insert into items (name, image, category_id, sold_by_weight, track_inventory, allow_backorder,
     is_taxable, is_ebt, is_fsa, selector_id, selector_name, account_id)
-    values ('${item.itemName}', '${item.image}', ${item.soldByWeight}, ${item.trackInventory}, ${item.allowBackorder},
+    values ('${item.itemName}', '${item.image}', '${item.categoryId}', ${item.soldByWeight}, ${item.trackInventory}, ${item.allowBackorder},
     ${item.isTaxable}, ${item.isEBT}, ${item.isFSA}, '${item.selectors.selectorId}', '${item.selectors.selectorName}', ${item.account_id})`
   connection.query(sql, function(err, createdItem) {
     if(err) callback(err, null)
@@ -142,7 +143,7 @@ function createItem(item, callback) {
 function updateItem(item, callback) {
   if(!item.selectors) return callback(new Error('No selectors found in request item'), null)
 
-  var sql = `update items set name = '${item.itemName}', image = '${item.image}', sold_by_weight = ${item.soldByWeight},
+  var sql = `update items set name = '${item.itemName}', image = '${item.image}', category_id = '${item.categoryId}', sold_by_weight = ${item.soldByWeight},
   track_inventory = ${item.trackInventory}, allow_backorder = ${item.allowBackorder}, is_taxable = ${item.isTaxable},
   is_ebt = ${item.isEBT}, is_fsa = ${item.isFSA}, selector_id = ${item.selectors.selectorId},
   selector_name = '${item.selectors.selectorName}' where account_id = ${item.account_id} and id = ${item.id}`

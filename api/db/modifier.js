@@ -13,8 +13,7 @@ function setItemValues(item) {
 }
 
 function getAllModifier(account_id, modifier_id, callback) {
-  var sql = `select m.id modifier_id, m.name modifier_name, a.name attribute, a.value from modifier m
-  left outer join modifier_attribute a on m.id = a.modifier_id where account_id = ${account_id}`
+  var sql = `select m.id modifier_id, m.name modifier_name, a.name attribute, a.value from modifier m left outer join modifier_attribute a on m.id = a.modifier_id where account_id = ${account_id}`
 
   if(modifier_id) sql += ` and m.id = '${modifier_id}'`
 

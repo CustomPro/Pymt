@@ -27,12 +27,7 @@ function openDay(req, res) {
     updateTime = new Date();
     payload.updateTime = updateTime
     payload.verifiedBy = payload.verifiedBy || currentUser.userId
-    // fake placeholder
-   /* payload = {
-      "openingAmount": 455.99,
-      "updateTime": "2018-05-21T19:06:18.537Z",
-      "verifiedBy": 23
-    }*/
+
     var updateTime = moment(payload.updateTime)
     if(!updateTime.isValid()) {
       return res.status(400).json({
